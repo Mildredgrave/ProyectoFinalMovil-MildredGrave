@@ -26,6 +26,7 @@ function AdminPage({ orders, editingProduct, onEditCompleted, onUpdateOrderStatu
     skinType: 'Todos' as SkinType,
     step: '',
     ingredients: '',
+    description: '',
   })
 
   useEffect(() => {
@@ -48,6 +49,7 @@ function AdminPage({ orders, editingProduct, onEditCompleted, onUpdateOrderStatu
       skinType: editingProduct.skinType,
       step: editingProduct.step || '',
       ingredients: editingProduct.ingredients?.join(', ') || '',
+      description: editingProduct.description || '',
     })
   }, [editingProduct])
 
@@ -79,6 +81,7 @@ function AdminPage({ orders, editingProduct, onEditCompleted, onUpdateOrderStatu
         skinType: formData.skinType,
         step: formData.step || undefined,
         ingredients: formData.ingredients ? formData.ingredients.split(',').map(i => i.trim()) : undefined,
+        description: formData.description || undefined,
       }
 
       if (editingProductState) {
@@ -99,13 +102,17 @@ function AdminPage({ orders, editingProduct, onEditCompleted, onUpdateOrderStatu
         skinType: 'Todos',
         step: '',
         ingredients: '',
+        description: '',
       })
       setShowProductForm(false)
       setEditingProductState(null)
       onEditCompleted()
     } catch (error) {
       console.error('Error al guardar producto:', error)
-      alert('Error al guardar el producto')
+      alert(
+        'Error al guardar el producto: ' +
+        (error instanceof Error ? error.message : 'Error desconocido')
+      )
     } finally {
       setLoading(false)
     }
@@ -141,7 +148,7 @@ function AdminPage({ orders, editingProduct, onEditCompleted, onUpdateOrderStatu
 
         {showProductForm && (
           <div className="bg-white border rounded-lg p-6 mb-6 shadow">
-            <h3 className="text-lg font-semibold mb-4">Nuevo Producto</h3>
+            <h3 className="text-lg font-semibold mb-4">{editingProductState ? 'Editar Producto' : 'Nuevo Producto'}</h3>
             <form onSubmit={handleAddProduct} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -227,7 +234,27 @@ function AdminPage({ orders, editingProduct, onEditCompleted, onUpdateOrderStatu
                   required
                 />
               </div>
-              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ingredientes</label>
+                <textarea
+                  name="ingredients"
+                  value={formData.ingredients}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border-gray-300 border px-3 py-2"
+                  rows={3}
+                  placeholder="Separar por comas"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border-gray-300 border px-3 py-2"
+                  rows={4}
+                />
+              </div>
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -289,6 +316,7 @@ function AdminPage({ orders, editingProduct, onEditCompleted, onUpdateOrderStatu
                           skinType: product.skinType,
                           step: product.step || '',
                           ingredients: product.ingredients?.join(', ') || '',
+                          description: product.description || '',
                         })
                       }}
                       className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition text-sm"

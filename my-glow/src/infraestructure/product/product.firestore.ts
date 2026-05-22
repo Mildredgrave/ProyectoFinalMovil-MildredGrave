@@ -22,6 +22,11 @@ export function subscribeProductsRealtime(
         image: data.image as string,
         stock: data.stock as number,
         skinType: data.skinType as Product["skinType"],
+        step: data.step as string | undefined,
+        ingredients: data.ingredients as string[] | undefined,
+        description: data.description as string | undefined,
+        usageInstructions: data.usageInstructions as string | string[] | undefined,
+        ingredientBenefits: data.ingredientBenefits as string | string[] | undefined,
       };
     });
 
@@ -53,6 +58,10 @@ export async function addProduct(
     docData.ingredients = productData.ingredients
   }
 
+  if (productData.description) {
+    docData.description = productData.description
+  }
+
   const docRef = await addDoc(productsRef, docData);
   return docRef.id;
 }
@@ -67,8 +76,16 @@ export async function updateProduct(
   productData: Partial<Omit<Product, 'id'>>
 ): Promise<void> {
   const productRef = doc(db, PRODUCTS_COLLECTION, productId);
+  const updateData: Partial<Omit<Product, 'id'>> = { ...productData };
+
+  Object.keys(updateData).forEach((key) => {
+    if (updateData[key as keyof typeof updateData] === undefined) {
+      delete updateData[key as keyof typeof updateData];
+    }
+  });
+
   await updateDoc(productRef, {
-    ...productData,
+    ...updateData,
     updatedAt: serverTimestamp(),
   });
 }

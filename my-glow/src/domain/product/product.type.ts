@@ -11,4 +11,7 @@ export type Product = {
   skinType: SkinType
   step?: string
   ingredients?: string[]
+  description?: string
+  usageInstructions?: string | string[]
+  ingredientBenefits?: string | string[]
 }

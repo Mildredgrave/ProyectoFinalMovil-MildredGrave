@@ -28,6 +28,7 @@ export async function createProductInFirestore(
     skinType: input.skinType,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
+    description: input.description,
   });
 }
 
@@ -62,6 +63,7 @@ export function subscribeProductsRealtime(
         image: data.image as string,
         stock: data.stock as number,
         skinType: data.skinType as Product["skinType"],
+        description: data.description as string | undefined,
       };
     });
 
