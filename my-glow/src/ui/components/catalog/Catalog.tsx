@@ -1,18 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ProductCard from '../product/ProductCard'
-import { products } from './products'
-
-
+import { subscribeProductsRealtime, deleteProduct } from '../../../infraestructure/product/product.firestore'
+import type { Product } from '../../../domain/product/product.type'
+import type { User } from '../../../domain/user/user.type'
 
 interface CatalogProps {
   searchQuery: string
   onAddToCart: (product: any) => void
+  onEditProduct?: (product: Product) => void
   selectedCategory: string
-  user: { name: string; email: string } | null
+  user: User | null
 }
 
-export default function Catalog({ searchQuery, onAddToCart, selectedCategory, user }: CatalogProps) {
+export default function Catalog({ searchQuery, onAddToCart, onEditProduct, selectedCategory, user }: CatalogProps) {
   const [selectedSkinType, setSelectedSkinType] = useState<string>('')
+  const [products, setProducts] = useState<Product[]>([])
+
+  useEffect(() => {
+    const unsubscribe = subscribeProductsRealtime(setProducts)
+    return () => unsubscribe()
+  }, [])
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -22,6 +29,19 @@ export default function Catalog({ searchQuery, onAddToCart, selectedCategory, us
     const matchesCategory = !selectedCategory || selectedCategory === 'Todos' || product.category === selectedCategory
     return matchesSearch && matchesSkinType && matchesCategory
   })
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!user?.role || user.role !== 'admin') return
+    if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) return
+
+    try {
+      await deleteProduct(productId)
+      alert('Producto eliminado exitosamente')
+    } catch (error) {
+      console.error('Error al eliminar producto:', error)
+      alert('Error al eliminar el producto')
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -56,7 +76,16 @@ export default function Catalog({ searchQuery, onAddToCart, selectedCategory, us
 
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => <ProductCard key={product.id} product={product} onAddToCart={onAddToCart} user={user} />)
+            filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={onAddToCart}
+                onEdit={onEditProduct}
+                onDelete={handleDeleteProduct}
+                user={user}
+              />
+            ))
           ) : (
             <div className="col-span-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 py-12 text-center">
               <p className="text-gray-500">No se encontraron productos que coincidan con tu búsqueda.</p>

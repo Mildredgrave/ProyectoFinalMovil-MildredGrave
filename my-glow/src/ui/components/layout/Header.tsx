@@ -1,12 +1,15 @@
+import type { User } from '../../../domain/user/user.type'
+
 interface HeaderProps {
   cartCount: number
   onCartClick: () => void
-  user: { name: string; email: string } | null
+  user: User | null
   onAccountClick: () => void
   onSkinQuizClick: () => void
+  onAdminClick?: () => void
 }
 
-export default function Header({ cartCount, onCartClick, user, onAccountClick, onSkinQuizClick }: HeaderProps) {
+export default function Header({ cartCount, onCartClick, user, onAccountClick, onSkinQuizClick, onAdminClick }: HeaderProps) {
   return (
     <>
       <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-3 text-white">
@@ -37,15 +40,25 @@ export default function Header({ cartCount, onCartClick, user, onAccountClick, o
               </svg>
               <span>{user ? user.name : 'Cuenta'}</span>
             </button>
-            {user && (
+            <button
+              onClick={onSkinQuizClick}
+              className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-green-600"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM6.2 20a6 6 0 0111.6 0" />
+              </svg>
+              <span>Skin Quiz</span>
+            </button>
+            {user && user.role === 'admin' && onAdminClick && (
               <button
-                onClick={onSkinQuizClick}
-                className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                onClick={onAdminClick}
+                className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                Skin Quiz
+                Admin
               </button>
             )}
             <button

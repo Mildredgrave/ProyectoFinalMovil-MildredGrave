@@ -60,3 +60,5 @@ export default function Navigation({ selectedCategory, onCategoryChange, onSearc
     </nav>
   )
 }
+
+

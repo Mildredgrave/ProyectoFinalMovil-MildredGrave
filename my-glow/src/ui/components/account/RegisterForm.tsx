@@ -1,7 +1,10 @@
 import { useState } from 'react'
+import type { User } from '../../../domain/user/user.type'
+import { saveUser, findUserByEmail } from '../../../infraestructure/user/user.local'
+import { saveUserFirestore, findUserByEmailFirestore } from '../../../infraestructure/user/user.firestore'
 
 interface RegisterFormProps {
-  onRegister: (user: { name: string; email: string }) => void
+  onRegister: (user: User) => void
   onCancel: () => void
 }
 
@@ -13,8 +16,9 @@ export default function RegisterForm({ onRegister, onCancel }: RegisterFormProps
     confirmPassword: ''
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isLoading, setIsLoading] = useState(false)
 
-  const validateForm = () => {
+  const validateForm = async () => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
@@ -25,6 +29,17 @@ export default function RegisterForm({ onRegister, onCancel }: RegisterFormProps
       newErrors.email = 'El email es requerido'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email inválido'
+    } else {
+      // Verificar en localStorage primero
+      if (findUserByEmail(formData.email)) {
+        newErrors.email = 'Este email ya está registrado'
+      } else {
+        // Verificar en Firestore
+        const existingUser = await findUserByEmailFirestore(formData.email)
+        if (existingUser) {
+          newErrors.email = 'Este email ya está registrado'
+        }
+      }
     }
 
     if (!formData.password) {
@@ -41,10 +56,35 @@ export default function RegisterForm({ onRegister, onCancel }: RegisterFormProps
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (validateForm()) {
-      onRegister({ name: formData.name, email: formData.email })
+    if (!(await validateForm())) {
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const user: User = {
+        id: Date.now().toString(),
+        name: formData.name,
+        email: formData.email,
+        role: 'user'
+      }
+      
+      // Guardar usuario en localStorage
+      saveUser(user)
+      // Guardar contraseña asociada al usuario en localStorage
+      localStorage.setItem(`user-password-${user.id}`, formData.password)
+      
+      // Guardar usuario en Firestore
+      await saveUserFirestore(user, formData.password)
+      
+      onRegister(user)
+    } catch (error) {
+      console.error('Error al registrar usuario:', error)
+      setErrors({ form: 'Error al registrar. Por favor intenta de nuevo.' })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -72,6 +112,11 @@ export default function RegisterForm({ onRegister, onCancel }: RegisterFormProps
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {errors.form && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+            {errors.form}
+          </div>
+        )}
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
             Nombre completo
@@ -162,9 +207,10 @@ export default function RegisterForm({ onRegister, onCancel }: RegisterFormProps
           </button>
           <button
             type="submit"
-            className="flex-1 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            disabled={isLoading}
+            className="flex-1 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Registrarse
+            {isLoading ? 'Registrando...' : 'Registrarse'}
           </button>
         </div>
       </form>
