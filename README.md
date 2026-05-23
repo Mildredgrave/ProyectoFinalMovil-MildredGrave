@@ -1,15 +1,5 @@
 # MyGlow - Plataforma de E-commerce de Cosméticos Coreanos
 
-**Skincare e-commerce platform con recomendaciones personalizadas y catálogo de productos coreanos**
-
----
-
-## 📚 Documentación
-
-- **[DOCUMENTACION.md](DOCUMENTACION.md)** - Guía completa (tecnología, funcionamiento, usuario)
-- **[REFERENCIA_RAPIDA.md](REFERENCIA_RAPIDA.md)** - Referencia rápida para desarrolladores
-
----
 
 ## 🎯 Características
 
@@ -124,13 +114,5 @@ Para información completa sobre:
 - Guía de usuario
 - Referencia técnica
 
-👉 Ver [DOCUMENTACION.md](DOCUMENTACION.md)
 
-Para consultas rápidas:
-👉 Ver [REFERENCIA_RAPIDA.md](REFERENCIA_RAPIDA.md)
 
----
-
-**Desarrollado para:** ProyectoFinalMovil
-**Autor:** Mildred Grave
-**Última actualización:** Mayo 2026
